@@ -25,6 +25,13 @@ def get_tasks():
     return render_template("tasks.html", tasks=tasks)
 
 
+@app.route("/search", methods=["GET", "POST"])
+def search():
+    query = request.form.get("query")
+    tasks = list(mongo.db.tasks.find({"$text": {"$search": query}}))
+    return render_template("tasks.html", tasks=tasks)
+
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -106,7 +113,7 @@ def add_task():
         task = {
             "category_name": request.form.get("category_name"),
             "task_name": request.form.get("task_name"),
-            "task_description": request.form.get("category_name"),
+            "task_description": request.form.get("task_description"),
             "is_urgent": is_urgent,
             "due_date": request.form.get("due_date"),
             "created_by": session["user"]
@@ -126,12 +133,12 @@ def edit_task(task_id):
         submit = {
             "category_name": request.form.get("category_name"),
             "task_name": request.form.get("task_name"),
-            "task_description": request.form.get("category_name"),
+            "task_description": request.form.get("task_description"),
             "is_urgent": is_urgent,
             "due_date": request.form.get("due_date"),
             "created_by": session["user"]
         }
-        mongo.db.tasks.update({"_id": ObjectId(task_id)},submit)
+        mongo.db.tasks.update({"_id": ObjectId(task_id)}, submit)
         flash("Task Successfully Updated")
 
     task = mongo.db.tasks.find_one({"_id": ObjectId(task_id)})
